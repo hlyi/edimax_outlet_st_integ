@@ -1,0 +1,1 @@
+# edimax_plug_st_integ
