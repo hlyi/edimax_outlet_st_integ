@@ -75,7 +75,8 @@ private getOutletPower(){
 }
 
 def hubActionCallback(response){
-	log.debug "Edimax resp: " + response
+	log.debug "Edimax resp HDR: " + response.headers
+    log.debug "Edimax resp Body: " + response.body
 }
 
 private sendCommand(command){
@@ -89,14 +90,14 @@ private sendCommand(command){
 	headers.put("HOST", "10.10.10.217:10000")
 	headers.put("Authorization", userpass)
 	log.debug "Headers are ${headers}"
-	deviceNetworkId = "0A0A0AD9:2710"
+	def deviceNetworkId = "0A0A0ABD:2710"
 
 	try {
 		sendHubCommand(new physicalgraph.device.HubAction([
 			method: "POST",
 			path: uri,
-			headers: headers
-			body: URLEncoder.encode('<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="get"> <Device.System.Power.State/> </CMD> </SMARTPLUG>"')]
+			headers: headers,
+			body: '<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="get"> <Device.System.Power.State/> </CMD> </SMARTPLUG>"'],
 			deviceNetworkId,
 			[callback: "hubActionCallback"]
 		))
