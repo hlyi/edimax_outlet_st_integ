@@ -16,9 +16,6 @@ metadata {
 		capability "Energy Meter"
 		capability "Actuator"
 		capability "Switch"
-/*
-		capability "Configuration"
-*/
 		capability "Polling"
 		capability "Refresh"
 		capability "Sensor"
@@ -55,11 +52,6 @@ metadata {
 		standardTile("reset", "device.energy", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'reset kWh', action:"reset"
 		}
-/*
-		standardTile("configure", "device.power", inactiveLabel: false, decoration: "flat") {
-			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
-		}
-*/
 		standardTile("refresh", "device.power", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
@@ -76,6 +68,15 @@ preferences {
 }
 
 
+private getOutletStatus(){
+}
+
+private getOutletPower(){
+}
+
+private sendCommand(command){
+}
+
 def parse(String description) {
 	log.debug("${description}")
 }
@@ -91,10 +92,8 @@ def off() {
 }
 
 def poll() {
-	delayBetween([
-		getOutletStatus()
-		getOutletPower()
-	])
+	getOutletStatus()
+	getOutletPower()
 }
 
 def refresh() {
@@ -104,24 +103,3 @@ def refresh() {
 def reset() {
 }
 
-private getOutletStatus(){
-}
-
-private getOutletPower(){
-
-}
-
-private sendCommand(command){
-}
-
-
-/*
-def configure() {
-	delayBetween([
-		zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 8).format(),   // energy in kWh
-		zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: 300).format(), // every 5 min
-		zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 0).format(),
-		zwave.configurationV1.configurationSet(parameterNumber: 103, size: 4, scaledConfigurationValue: 0).format()
-	])
-}
-*/
