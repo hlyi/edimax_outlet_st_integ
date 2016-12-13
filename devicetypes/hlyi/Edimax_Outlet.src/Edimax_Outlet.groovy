@@ -16,7 +16,7 @@
 
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Edimax Outlet", namespace: "hlyi", author: "H Yi") {
+	definition (name: "Edimax_Outlet", namespace: "hlyi", author: "H Yi") {
 		capability "Actuator"
 		capability "Switch"
 		capability "Power Meter"
