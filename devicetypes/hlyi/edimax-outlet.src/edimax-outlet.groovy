@@ -74,21 +74,35 @@ private getOutletStatus(){
 private getOutletPower(){
 }
 
+def hubActionCallback(response){
+	log.debug "Edimax resp: " + response
+}
+
 private sendCommand(command){
 	log.debug "Edimax: Command"
-	def params = [
-			uri: "http://admin:54321@10.10.10.217:10000/smartplug.cgi",
-			body: URLEncoder.encode('<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="get"> <Device.System.Power.State/> </CMD> </SMARTPLUG>"')
-		]
-               
+
+//	def userpassascii = "${username}:${password}"
+	def userpassascii = "admin:54321"
+	def userpass = "Basic " + userpassascii.encodeAsBase64().toString()
+	def uri = "/smartplug.cgi"
+	def headers = [:]
+	headers.put("HOST", "10.10.10.217:10000")
+	headers.put("Authorization", userpass)
+	log.debug "Headers are ${headers}"
+	deviceNetworkId = "0A0A0AD9:2710"
+
 	try {
-		httpPost(params) { resp -> 
-			log.debug resp.data;
-			//do stuff here
-		}
+		sendHubCommand(new physicalgraph.device.HubAction([
+			method: "POST",
+			path: uri,
+			headers: headers
+			body: URLEncoder.encode('<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="get"> <Device.System.Power.State/> </CMD> </SMARTPLUG>"')]
+			deviceNetworkId,
+			[callback: "hubActionCallback"]
+		))
 	} catch(e){
 		//handle exception here.
-        log.debug "http error"
+		log.debug "Http Error" + e.message
 	}
 
 }
