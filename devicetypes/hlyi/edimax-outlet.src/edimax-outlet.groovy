@@ -101,4 +101,19 @@ def refresh() {
 }
 
 def reset() {
+	def params = [
+            uri: "http://admin:54321@10.10.10.217:10000/smartplug.cgi",
+            body: URLEncoder.encode('<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="get"> <Device.System.Power.State/> </CMD> </SMARTPLUG>"')
+        ]
+               
+        try {
+            httpPost(params) { resp -> 
+               log.debug resp.data;
+               //do stuff here
+            }
+       }
+       catch(e){
+           //handle exception here.
+       }
+	
 }
