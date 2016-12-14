@@ -140,12 +140,14 @@ def parse(String description) {
 
 def on() {
 	sendStateCmd ("ON")
+	sendEvent(name: "switch", value: "turningOn", isStateChange: true)
 	getOutletStatus()
 //	return "turningOn"
 }
 
 def off() {
 	sendStateCmd ("OFF")
+	sendEvent(name: "switch", value: "turningOff", isStateChange: true)
 	getOutletStatus()
 //	return "turningOff"
 }
