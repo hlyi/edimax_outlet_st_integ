@@ -20,8 +20,6 @@ metadata {
 		capability "Refresh"
 		capability "Sensor"
 
-		command "reset"
-
 	}
 
 	// simulator metadata
@@ -48,18 +46,12 @@ metadata {
 			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#B6F59A", nextState: "on"
 			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#D3D3D3", nextState: "off"
 		}
-		valueTile("energy", "device.energy", decoration: "flat") {
-			state "default", label:'${currentValue} kWh'
-		}
-		standardTile("reset", "device.energy", inactiveLabel: false, decoration: "flat") {
-			state "default", label:'reset kWh', action:"reset"
-		}
 		standardTile("refresh", "device.power", inactiveLabel: false, decoration: "flat") {
-			state "default", label:'${currentValue} W', action:"refresh", icon:"st.secondary.refresh"
+			state "default", label:'${currentValue} W', action:"refresh"
 		}
 
 		main "switch"
-		details(["switch","energy","reset","refresh"])
+		details(["switch","refresh"])
 	}
 }
 
@@ -80,7 +72,7 @@ private getOutletPower(){
 
 def hubActionCallback(response){
 //	log.debug "Edimax resp HDR: " + response.headers
-	log.debug "Edimax resp Body: " + response.body
+//	log.debug "Edimax resp Body: " + response.body
 	def rsp =new XmlSlurper().parseText( response.body)
 //	log.debug "Status: " + rsp.CMD."Device.System.Power.State"
 	def status = rsp?.CMD?."Device.System.Power.State"
@@ -89,14 +81,14 @@ def hubActionCallback(response){
 		if ( rsp == "OFF" ){
 			status = "off"
 		}
-		log.debug "CURRENT status: " + status
+//		log.debug "CURRENT status: " + status
 		sendEvent(name: "switch", value: status, isStateChange: true)
 		return status
 	}
 	status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowPower"
 	if ( status && status != "" ) {
-		log.debug "POWER: " + status
-		sendEvent ( name: "power", value: Math.round(status.toFloat()), unit: "W")
+//		log.debug "POWER: " + status
+		sendEvent ( name: "power", value: Math.round(status.toFloat()), unit: "W", isStateChange: true)
 	}
 }
 
@@ -158,9 +150,6 @@ def poll() {
 def refresh() {
 	getOutletStatus()
 	getOutletPower()
+    return ''
 }
-
-def reset() {
-	log.debug "Edimax: Reset"
-	log.debug "Power read: " + getOutletPower() + "W..."
-}
+ 
