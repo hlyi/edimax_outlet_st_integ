@@ -46,8 +46,8 @@ metadata {
 //			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#B6F59A", nextState: "on"
 //			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#D3D3D3", nextState: "off"
 		}
-		standardTile("refresh", "device.power", inactiveLabel: false, decoration: "flat") {
-			state "default", label:'${currentValue} W', action:"refresh"
+		standardTile("power", "device.power", inactiveLabel: false, decoration: "flat") {
+			state "power", label:'${currentValue} W', action:"refresh"
 		}
 
 		main "switch"
