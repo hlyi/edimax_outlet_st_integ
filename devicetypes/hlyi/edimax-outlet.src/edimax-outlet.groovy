@@ -46,12 +46,16 @@ metadata {
 //			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#B6F59A", nextState: "on"
 //			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#D3D3D3", nextState: "off"
 		}
-		standardTile("refresh", "device.power", decoration: "flat") {
-			state "power", label:'${currentValue} W', action:"refresh", defaultState: true
+		standardTile("refresh", "device.current", decoration: "flat") {
+			state "current", label:'${currentValue} mA', action:"refresh", defaultState: true
+		}
+
+		valueTile("power", "device.power", decoration: "flat") {
+			state "power", label:'${currentValue} W', defaultState: true
 		}
 
 		main "switch"
-		details(["switch","refresh"])
+		details(["switch", "power","refresh"])
 	}
 }
 
@@ -67,7 +71,7 @@ private getOutletStatus(){
 }
 
 private getOutletPower(){
-	sendMsgToOutlet('get', "<NOW_POWER><Device.System.Power.NowPower/></NOW_POWER>")
+	sendMsgToOutlet('get', "<NOW_POWER><Device.System.Power.NowPower/><Device.System.Power.NowCurrent/></NOW_POWER>")
 }
 
 def hubActionCallback(response){
@@ -90,6 +94,12 @@ def hubActionCallback(response){
 //		log.debug "POWER: " + status
 		sendEvent ( name: "power", value: status.toFloat(), unit: "W", isStateChange: true)
 	}
+    status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowCurrent"
+	if ( status && status != "" ) {
+//		log.debug "POWER: " + status
+		sendEvent ( name: "current", value: status.toFloat()*1000, unit: "mA", isStateChange: true)
+	}
+
 }
 
 
@@ -107,7 +117,7 @@ private sendMsgToOutlet(cmd, msg){
 	headers.put("HOST", "${settings.outletIP}:10000")
 	headers.put("Authorization", userpass)
 //	log.debug "Headers are ${headers}"
-	def deviceNetworkId = "0A0A0ABD:2710"
+	def deviceNetworkId = "00000000:2710"
 	def body = '<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="' + cmd + '">' + msg + '</CMD> </SMARTPLUG>"'
 //	log.debug ( "SEND BODY: ${body}")
 	try {
