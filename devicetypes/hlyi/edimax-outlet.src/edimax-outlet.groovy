@@ -1,5 +1,5 @@
 /**
- *  Copyright 2015 SmartThings
+ *  Copyright 2016 H. Yi
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -53,7 +53,7 @@ metadata {
 			state "default", label:'reset kWh', action:"reset"
 		}
 		standardTile("refresh", "device.power", inactiveLabel: false, decoration: "flat") {
-			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
+			state "default", label:'${currentValue} W', action:"refresh", icon:"st.secondary.refresh"
 		}
 
 		main "switch"
@@ -69,27 +69,46 @@ preferences {
 
 
 private getOutletStatus(){
+	sendMsgToOutlet('get', "<Device.System.Power.State/>")
 }
 
 private getOutletPower(){
+	sendMsgToOutlet('get', "<NOW_POWER><Device.System.Power.NowPower/></NOW_POWER>")
 }
 
 def hubActionCallback(response){
-	log.debug "Edimax resp HDR: " + response.headers
-    log.debug "Edimax resp Body: " + response.body
+//	log.debug "Edimax resp HDR: " + response.headers
+	log.debug "Edimax resp Body: " + response.body
+    def rsp =new XmlSlurper().parseText( response.body)
+//    log.debug "Status: " + rsp.CMD."Device.System.Power.State"
+    def status = rsp?.CMD?."Device.System.Power.State"
+    if ( status == "ON" || status== "OFF" ){
+    		status = "on"
+            if ( rsp == "OFF" ){
+            	status = "off"
+            }
+            log.debug "CURRENT status: " + status
+    		sendEvent(name: "switch", value: status, isStateChange: true)
+            return status
+    }
+    status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowPower"
+    if ( status && status != "" ) {
+    	log.debug "POWER: " + status
+    	sendEvent ( name: "power", value: Math.round(status.toFloat()), unit: "W")
+    }
 }
 
+/*
 private sendCommand(command){
-	log.debug "Edimax: Command"
+//	log.debug "Edimax: Command"
 
-//	def userpassascii = "${username}:${password}"
-	def userpassascii = "admin:54321"
+	def userpassascii = "${settings.username}:${settings.password}"
 	def userpass = "Basic " + userpassascii.encodeAsBase64().toString()
 	def uri = "/smartplug.cgi"
 	def headers = [:]
-	headers.put("HOST", "10.10.10.217:10000")
+	headers.put("HOST", "${settings.outletIP}:10000")
 	headers.put("Authorization", userpass)
-	log.debug "Headers are ${headers}"
+//	log.debug "Headers are ${headers}"
 	def deviceNetworkId = "0A0A0ABD:2710"
 
 	try {
@@ -103,22 +122,56 @@ private sendCommand(command){
 		))
 	} catch(e){
 		//handle exception here.
-		log.debug "Http Error" + e.message
+		log.debug "Edimax: Http Error" + e.message
 	}
 
 }
+*/
+
+private sendStateCmd (command){
+	sendMsgToOutlet('setup', "<Device.System.Power.State>${command}</Device.System.Power.State>")
+}
+
+private sendMsgToOutlet(cmd, msg){
+//	log.debug "Edimax: Command"
+
+	def userpassascii = "${settings.username}:${settings.password}"
+	def userpass = "Basic " + userpassascii.encodeAsBase64().toString()
+	def uri = "/smartplug.cgi"
+	def headers = [:]
+	headers.put("HOST", "${settings.outletIP}:10000")
+	headers.put("Authorization", userpass)
+//	log.debug "Headers are ${headers}"
+	def deviceNetworkId = "0A0A0ABD:2710"
+	def body = '<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="' + cmd + '">' + msg + '</CMD> </SMARTPLUG>"'
+//    log.debug ( "SEND BODY: ${body}")
+	try {
+		sendHubCommand(new physicalgraph.device.HubAction([
+			method: "POST",
+			path: uri,
+			headers: headers,
+			body: body ],
+			deviceNetworkId,
+			[callback: "hubActionCallback"]
+		))
+	} catch(e){
+		//handle exception here.
+		log.debug "Edimax: Http Error" + e.message
+	}
+}
+
 
 def parse(String description) {
-	log.debug("${description}")
+	log.debug("Parsing ${description}")
 }
 
 def on() {
-	sendCommand ("ON")
+	sendStateCmd ("ON")
 	getOutletStatus()
 }
 
 def off() {
-	sendCommand ("OFF")
+	sendStateCmd ("OFF")
 	getOutletStatus()
 }
 
@@ -129,23 +182,10 @@ def poll() {
 
 def refresh() {
 	getOutletStatus()
+    getOutletPower()
 }
 
 def reset() {
 	log.debug "Edimax: Reset"
-	def params = [
-            uri: "http://admin:54321@10.10.10.217:10000/smartplug.cgi",
-            body: URLEncoder.encode('<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="get"> <Device.System.Power.State/> </CMD> </SMARTPLUG>"')
-        ]
-               
-        try {
-            httpPost(params) { resp -> 
-               log.debug resp.data;
-               //do stuff here
-            }
-       }
-       catch(e){
-           //handle exception here.
-       }
-	
+	log.debug "Power read: " + getOutletPower() + "W..."
 }
