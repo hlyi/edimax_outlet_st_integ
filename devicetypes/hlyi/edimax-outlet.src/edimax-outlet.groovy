@@ -43,8 +43,10 @@ metadata {
 	// tile definitions
 	tiles {
 		standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true) {
-			state "on", label: '${name}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#79b821"
-			state "off", label: '${name}', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff"
+			state "off", label:'${name}', action:"switch.on",  icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+			state "on",  label:'${name}', action:"switch.off", icon:"st.switches.switch.on",  backgroundColor:"#79b821", nextState:"turningOff"
+			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#79b821", nextState: "turningOff"
+			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState: "turningOn"
 		}
 		valueTile("energy", "device.energy", decoration: "flat") {
 			state "default", label:'${currentValue} kWh'
@@ -79,54 +81,25 @@ private getOutletPower(){
 def hubActionCallback(response){
 //	log.debug "Edimax resp HDR: " + response.headers
 	log.debug "Edimax resp Body: " + response.body
-    def rsp =new XmlSlurper().parseText( response.body)
-//    log.debug "Status: " + rsp.CMD."Device.System.Power.State"
-    def status = rsp?.CMD?."Device.System.Power.State"
-    if ( status == "ON" || status== "OFF" ){
-    		status = "on"
-            if ( rsp == "OFF" ){
-            	status = "off"
-            }
-            log.debug "CURRENT status: " + status
-    		sendEvent(name: "switch", value: status, isStateChange: true)
-            return status
-    }
-    status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowPower"
-    if ( status && status != "" ) {
-    	log.debug "POWER: " + status
-    	sendEvent ( name: "power", value: Math.round(status.toFloat()), unit: "W")
-    }
-}
-
-/*
-private sendCommand(command){
-//	log.debug "Edimax: Command"
-
-	def userpassascii = "${settings.username}:${settings.password}"
-	def userpass = "Basic " + userpassascii.encodeAsBase64().toString()
-	def uri = "/smartplug.cgi"
-	def headers = [:]
-	headers.put("HOST", "${settings.outletIP}:10000")
-	headers.put("Authorization", userpass)
-//	log.debug "Headers are ${headers}"
-	def deviceNetworkId = "0A0A0ABD:2710"
-
-	try {
-		sendHubCommand(new physicalgraph.device.HubAction([
-			method: "POST",
-			path: uri,
-			headers: headers,
-			body: '<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="get"> <Device.System.Power.State/> </CMD> </SMARTPLUG>"'],
-			deviceNetworkId,
-			[callback: "hubActionCallback"]
-		))
-	} catch(e){
-		//handle exception here.
-		log.debug "Edimax: Http Error" + e.message
+	def rsp =new XmlSlurper().parseText( response.body)
+//	log.debug "Status: " + rsp.CMD."Device.System.Power.State"
+	def status = rsp?.CMD?."Device.System.Power.State"
+	if ( status == "ON" || status== "OFF" ){
+		status = "on"
+		if ( rsp == "OFF" ){
+			status = "off"
+		}
+		log.debug "CURRENT status: " + status
+		sendEvent(name: "switch", value: status, isStateChange: true)
+		return status
 	}
-
+	status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowPower"
+	if ( status && status != "" ) {
+		log.debug "POWER: " + status
+		sendEvent ( name: "power", value: Math.round(status.toFloat()), unit: "W")
+	}
 }
-*/
+
 
 private sendStateCmd (command){
 	sendMsgToOutlet('setup', "<Device.System.Power.State>${command}</Device.System.Power.State>")
@@ -144,7 +117,7 @@ private sendMsgToOutlet(cmd, msg){
 //	log.debug "Headers are ${headers}"
 	def deviceNetworkId = "0A0A0ABD:2710"
 	def body = '<?xml version="1.0" encoding="UTF8"?> <SMARTPLUG id="edimax"> <CMD id="' + cmd + '">' + msg + '</CMD> </SMARTPLUG>"'
-//    log.debug ( "SEND BODY: ${body}")
+//	log.debug ( "SEND BODY: ${body}")
 	try {
 		sendHubCommand(new physicalgraph.device.HubAction([
 			method: "POST",
@@ -167,12 +140,14 @@ def parse(String description) {
 
 def on() {
 	sendStateCmd ("ON")
-	getOutletStatus()
+//	getOutletStatus()
+	return "turningOn"
 }
 
 def off() {
 	sendStateCmd ("OFF")
-	getOutletStatus()
+//	getOutletStatus()
+	return "turningOff"
 }
 
 def poll() {
@@ -182,7 +157,7 @@ def poll() {
 
 def refresh() {
 	getOutletStatus()
-    getOutletPower()
+	getOutletPower()
 }
 
 def reset() {
