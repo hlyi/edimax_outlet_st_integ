@@ -41,10 +41,10 @@ metadata {
 	// tile definitions
 	tiles {
 		standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true) {
-			state "off", label:'${name}', action:"switch.on",  icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
-			state "on",  label:'${name}', action:"switch.off", icon:"st.switches.switch.on",  backgroundColor:"#79b821", nextState:"turningOff"
-			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#B6F59A", nextState: "on"
-			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#D3D3D3", nextState: "off"
+			state "off", label:'off', action:"switch.on",  icon:"st.switches.switch.off", backgroundColor:"#ffffff"
+			state "on",  label:'on', action:"switch.off", icon:"st.switches.switch.on",  backgroundColor:"#79b821"
+//			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#B6F59A", nextState: "on"
+//			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#D3D3D3", nextState: "off"
 		}
 		standardTile("refresh", "device.power", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'${currentValue} W', action:"refresh"
@@ -131,14 +131,16 @@ def parse(String description) {
 }
 
 def on() {
-	sendEvent(name: "switch", value: "turningOn", isStateChange: true)
+//	sendEvent(name: "switch", value: "turningOn", isStateChange: true)
 	sendStateCmd ("ON")
+    sendEvent(name: "switch", value: "on", isStateChange: true)
 	getOutletStatus()
 }
 
 def off() {
-	sendEvent(name: "switch", value: "turningOff", isStateChange: true)
+//	sendEvent(name: "switch", value: "turningOff", isStateChange: true)
 	sendStateCmd ("OFF")
+    sendEvent(name: "switch", value: "off", isStateChange: true)
 	getOutletStatus()
 }
 
