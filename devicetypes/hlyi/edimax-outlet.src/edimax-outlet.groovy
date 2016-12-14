@@ -140,14 +140,14 @@ def parse(String description) {
 
 def on() {
 	sendStateCmd ("ON")
-//	getOutletStatus()
-	return "turningOn"
+	getOutletStatus()
+//	return "turningOn"
 }
 
 def off() {
 	sendStateCmd ("OFF")
-//	getOutletStatus()
-	return "turningOff"
+	getOutletStatus()
+//	return "turningOff"
 }
 
 def poll() {
