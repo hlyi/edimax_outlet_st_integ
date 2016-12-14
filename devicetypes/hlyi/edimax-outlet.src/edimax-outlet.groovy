@@ -46,8 +46,8 @@ metadata {
 //			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#B6F59A", nextState: "on"
 //			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#D3D3D3", nextState: "off"
 		}
-		standardTile("power", "device.power", inactiveLabel: false, decoration: "flat") {
-			state "power", label:'${currentValue} W', action:"refresh"
+		standardTile("refresh", "device.power", decoration: "flat") {
+			state "power", label:'${currentValue} W', action:"refresh", defaultState: true
 		}
 
 		main "switch"
@@ -88,7 +88,7 @@ def hubActionCallback(response){
 	status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowPower"
 	if ( status && status != "" ) {
 //		log.debug "POWER: " + status
-		sendEvent ( name: "power", value: Math.round(status.toFloat()), unit: "W", isStateChange: true)
+		sendEvent ( name: "power", value: status.toFloat(), unit: "W", isStateChange: true)
 	}
 }
 
