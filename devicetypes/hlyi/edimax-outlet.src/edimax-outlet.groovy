@@ -150,6 +150,5 @@ def poll() {
 def refresh() {
 	getOutletStatus()
 	getOutletPower()
-    return ''
+	return ''
 }
- 
