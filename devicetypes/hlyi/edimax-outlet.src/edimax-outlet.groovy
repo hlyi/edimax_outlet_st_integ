@@ -45,8 +45,8 @@ metadata {
 		standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true) {
 			state "off", label:'${name}', action:"switch.on",  icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
 			state "on",  label:'${name}', action:"switch.off", icon:"st.switches.switch.on",  backgroundColor:"#79b821", nextState:"turningOff"
-			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#79b821", nextState: "on"
-			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState: "off"
+			state "turningOn", label:'Turning on', icon:"st.switches.switch.on", backgroundColor:"#B6F59A", nextState: "on"
+			state "turningOff", label:'Turning off', icon:"st.switches.switch.off", backgroundColor:"#D3D3D3", nextState: "off"
 		}
 		valueTile("energy", "device.energy", decoration: "flat") {
 			state "default", label:'${currentValue} kWh'
@@ -142,14 +142,12 @@ def on() {
 	sendStateCmd ("ON")
 	sendEvent(name: "switch", value: "turningOn", isStateChange: true)
 	getOutletStatus()
-//	return "turningOn"
 }
 
 def off() {
 	sendStateCmd ("OFF")
 	sendEvent(name: "switch", value: "turningOff", isStateChange: true)
 	getOutletStatus()
-//	return "turningOff"
 }
 
 def poll() {
