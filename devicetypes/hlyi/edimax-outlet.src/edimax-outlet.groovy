@@ -94,7 +94,7 @@ def hubActionCallback(response){
 //		log.debug "POWER: " + status
 		sendEvent ( name: "power", value: status.toFloat(), unit: "W", isStateChange: true)
 	}
-    status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowCurrent"
+	status = rsp?.CMD?.NOW_POWER?."Device.System.Power.NowCurrent"
 	if ( status && status != "" ) {
 //		log.debug "POWER: " + status
 		sendEvent ( name: "current", value: status.toFloat()*1000, unit: "mA", isStateChange: true)
@@ -143,14 +143,14 @@ def parse(String description) {
 def on() {
 //	sendEvent(name: "switch", value: "turningOn", isStateChange: true)
 	sendStateCmd ("ON")
-    sendEvent(name: "switch", value: "on", isStateChange: true)
+	sendEvent(name: "switch", value: "on", isStateChange: true)
 	getOutletStatus()
 }
 
 def off() {
 //	sendEvent(name: "switch", value: "turningOff", isStateChange: true)
 	sendStateCmd ("OFF")
-    sendEvent(name: "switch", value: "off", isStateChange: true)
+	sendEvent(name: "switch", value: "off", isStateChange: true)
 	getOutletStatus()
 }
 
